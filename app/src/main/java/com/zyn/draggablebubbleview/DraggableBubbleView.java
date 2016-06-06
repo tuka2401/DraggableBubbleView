@@ -12,6 +12,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
@@ -80,7 +81,7 @@ public class DraggableBubbleView extends View
     private void init()
     {
         setBackgroundColor(Color.TRANSPARENT);
-        mMaxDragLength = ABAppUtil.getDeviceHeight(mContext)/10;
+        mMaxDragLength = ABAppUtil.getDeviceHeight(mContext) / 10;
         // 设置绘制flag的paint
         mPaint = new Paint();
         mPaint.setColor(mColor);
@@ -88,24 +89,26 @@ public class DraggableBubbleView extends View
         mPaint.setStyle(Paint.Style.FILL);
 
         //回弹动画
-        mAnimator = ValueAnimator.ofFloat(1.0f);
+        final float delay = 0.2f;
+        final float unit = 1.0f;
+        mAnimator = ValueAnimator.ofFloat(unit);
         mAnimator.setInterpolator(new OvershootInterpolator(4));
         mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
         {
-            float triangleX = 0;
-            float triangleY = 0;
+            float triangleX = 0.0f;
+            float triangleY = 0.0f;
 
             @Override
             public void onAnimationUpdate(ValueAnimator animation)
             {
                 float percent = animation.getAnimatedFraction();
-                if (percent == 0)
+                if (percent == 0.0f)
                 {
                     triangleX = mTriangle.x;
                     triangleY = mTriangle.y;
                 }
-                float x = triangleX * (1.0f - percent);
-                float y = triangleY * (1.0f - percent);
+                float x = triangleX * (unit - percent);
+                float y = triangleY * (unit - percent);
                 setEndPoint(mStartPoint.x + x, mStartPoint.y + y);
             }
         });
@@ -169,7 +172,7 @@ public class DraggableBubbleView extends View
 
         if (!mIsDismiss)
         {
-            float curRadius = (int) (mStartRadius*(1-mTriangle.getZ()/mMaxDragLength));
+            float curRadius = (int) (mStartRadius * (1 - mTriangle.getZ() / mMaxDragLength));
             if (curRadius < mStartRadius * 0.2)
             {
                 curRadius = (float) (mStartRadius * 0.2);
@@ -280,6 +283,7 @@ public class DraggableBubbleView extends View
     public interface OnDraggbleListener
     {
         void OnBubbleDismiss(PointF point);
+
         void OnBubbleReset(PointF point);
     }
 

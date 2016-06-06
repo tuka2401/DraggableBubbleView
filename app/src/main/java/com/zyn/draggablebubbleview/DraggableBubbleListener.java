@@ -18,7 +18,7 @@ public class DraggableBubbleListener implements View.OnTouchListener,DraggableBu
     private WindowManager mWindowManager;
     private WindowManager.LayoutParams mLayoutParams;
 
-    public DraggableBubbleListener(Context context, View view,@ColorInt int color,DraggableBubbleView.OnDraggbleListener listener)
+    public DraggableBubbleListener(Context context, View view, @ColorInt int color, DraggableBubbleView.OnDraggbleListener listener)
     {
         mContext = context;
         mView = view;
@@ -43,14 +43,14 @@ public class DraggableBubbleListener implements View.OnTouchListener,DraggableBu
 //                ViewParent parent = v.getParent();
 //                // 请求其父级View不拦截Touch事件
 //                parent.requestDisallowInterceptTouchEvent(true);
-                mView.setVisibility(View.INVISIBLE);
                 float radius = Math.min(mView.getWidth()/2,mView.getHeight()/2);
                 int[] position = new int[2];
                 mView.getLocationInWindow(position);
                 float x = position[0]+radius;
                 float y = position[1]+radius;
                 mDraggableBubbleView.initParams(new PointF(x,y),radius);
-                mWindowManager.addView(mDraggableBubbleView,mLayoutParams);
+                mWindowManager.addView(mDraggableBubbleView, mLayoutParams);
+                mView.setVisibility(View.INVISIBLE);
             }
             break;
             case MotionEvent.ACTION_MOVE:
@@ -72,22 +72,28 @@ public class DraggableBubbleListener implements View.OnTouchListener,DraggableBu
     @Override
     public void OnBubbleDismiss(PointF point)
     {
-        mWindowManager.removeView(mDraggableBubbleView);
         mView.setVisibility(View.GONE);
+        mWindowManager.removeView(mDraggableBubbleView);
         if(mListener!=null)
         {
             mListener.OnBubbleDismiss(point);
         }
     }
-
     @Override
-    public void OnBubbleReset(PointF point)
+    public void OnBubbleReset(final PointF point)
     {
-        mWindowManager.removeView(mDraggableBubbleView);
-        mView.setVisibility(View.VISIBLE);
-        if(mListener!=null)
+        mView.postDelayed(new Runnable()
         {
-            mListener.OnBubbleReset(point);
-        }
+            @Override
+            public void run()
+            {
+                mView.setVisibility(View.VISIBLE);
+                mWindowManager.removeView(mDraggableBubbleView);
+                if (mListener != null)
+                {
+                    mListener.OnBubbleReset(point);
+                }
+            }
+        }, 200);
     }
 }

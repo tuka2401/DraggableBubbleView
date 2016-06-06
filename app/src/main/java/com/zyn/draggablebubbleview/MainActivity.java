@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void OnBubbleDismiss(PointF point)
             {
-                
+
             }
 
             @Override
