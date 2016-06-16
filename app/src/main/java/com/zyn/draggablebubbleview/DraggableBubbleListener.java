@@ -1,13 +1,21 @@
 package com.zyn.draggablebubbleview;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.graphics.PointF;
+import android.os.Handler;
 import android.support.annotation.ColorInt;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.view.Window;
 import android.view.WindowManager;
+
+import com.wangjie.androidbucket.utils.ABAppUtil;
+import com.wangjie.androidbucket.utils.ABViewUtil;
 
 public class DraggableBubbleListener implements View.OnTouchListener,DraggableBubbleView.OnDraggbleListener
 {
@@ -15,10 +23,10 @@ public class DraggableBubbleListener implements View.OnTouchListener,DraggableBu
     private DraggableBubbleView mDraggableBubbleView;
     private DraggableBubbleView.OnDraggbleListener mListener;
     private Context mContext;
-    private WindowManager mWindowManager;
     private WindowManager.LayoutParams mLayoutParams;
+    private ViewGroup mDecorView;
 
-    public DraggableBubbleListener(Context context, View view, @ColorInt int color, DraggableBubbleView.OnDraggbleListener listener)
+    public DraggableBubbleListener(Context context, View view,@ColorInt int color,DraggableBubbleView.OnDraggbleListener listener)
     {
         mContext = context;
         mView = view;
@@ -26,10 +34,10 @@ public class DraggableBubbleListener implements View.OnTouchListener,DraggableBu
         mDraggableBubbleView.setColor(color);
         mListener = listener;
         mDraggableBubbleView.setListener(this);
-        mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         mLayoutParams = new WindowManager.LayoutParams();
         mLayoutParams.format = PixelFormat.TRANSLUCENT;
         mLayoutParams.flags |= WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+        mDecorView = (ViewGroup) ((Activity) mContext).getWindow().getDecorView();
     }
 
 
@@ -48,8 +56,8 @@ public class DraggableBubbleListener implements View.OnTouchListener,DraggableBu
                 mView.getLocationInWindow(position);
                 float x = position[0]+radius;
                 float y = position[1]+radius;
-                mDraggableBubbleView.initParams(new PointF(x,y),radius);
-                mWindowManager.addView(mDraggableBubbleView, mLayoutParams);
+                mDraggableBubbleView.initParams(new PointF(x, y), radius);
+                mDecorView.addView(mDraggableBubbleView,mLayoutParams);
                 mView.setVisibility(View.INVISIBLE);
             }
             break;
@@ -73,7 +81,7 @@ public class DraggableBubbleListener implements View.OnTouchListener,DraggableBu
     public void OnBubbleDismiss(PointF point)
     {
         mView.setVisibility(View.GONE);
-        mWindowManager.removeView(mDraggableBubbleView);
+        mDecorView.removeView(mDraggableBubbleView);
         if(mListener!=null)
         {
             mListener.OnBubbleDismiss(point);
@@ -88,7 +96,14 @@ public class DraggableBubbleListener implements View.OnTouchListener,DraggableBu
             public void run()
             {
                 mView.setVisibility(View.VISIBLE);
-                mWindowManager.removeView(mDraggableBubbleView);
+                try
+                {
+                    mDecorView.removeView(mDraggableBubbleView);
+                }catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
                 if (mListener != null)
                 {
                     mListener.OnBubbleReset(point);
